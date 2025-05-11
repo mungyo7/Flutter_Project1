@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'firebase_options.dart';
+import 'style.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -221,112 +222,70 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('로그인 성공!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      AppSnackBar.showSuccess(context, '로그인 성공!');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.large),
               child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                ),
-                padding: const EdgeInsets.all(20.0),
+                decoration: AppDecorations.mainBoxDecoration(),
+                padding: const EdgeInsets.all(AppSpacing.large),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
                       '로그인',
-                      style: TextStyle(
-                        color: Color(0xFFB2FF00),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyle.title,
                     ),
-                    const Divider(
-                      color: Color(0xFFB2FF00),
-                      thickness: 1,
-                    ),
-                    const SizedBox(height: 20),
+                    AppDividers.primary,
+                    const SizedBox(height: AppSpacing.large),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           '아이디(이메일)',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.label,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.small),
                         Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                          ),
+                          decoration: AppDecorations.inputBoxDecoration(),
                           child: TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: AppTextStyle.bodyText,
+                            decoration: AppDecorations.inputDecoration(
                               hintText: 'ENTER_EMAIL',
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                              suffixIcon: Icon(
-                                Icons.check_circle,
-                                color: Color(0xFFB2FF00),
-                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.large),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           '비밀번호',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.label,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.small),
                         Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                          ),
+                          decoration: AppDecorations.inputBoxDecoration(),
                           child: TextField(
                             controller: _passwordController,
                             obscureText: true,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: AppTextStyle.bodyText,
+                            decoration: AppDecorations.inputDecoration(
                               hintText: 'ENTER_PASSWORD',
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                              suffixIcon: Icon(
-                                Icons.check_circle,
-                                color: Color(0xFFB2FF00),
-                              ),
                             ),
                           ),
                         ),
@@ -334,46 +293,32 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     if (_errorMessage != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
+                        padding: const EdgeInsets.only(top: AppSpacing.small),
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                          style: TextStyle(color: AppColors.error),
                         ),
                       ),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: AppSpacing.xlarge),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _isLoading ? null : _signIn,
-                        icon: const Icon(Icons.lock, color: Colors.black),
+                        icon: Icon(Icons.lock, color: AppColors.textDark),
                         label: const Text(
                           'LOGIN',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          style: AppTextStyle.buttonText,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB2FF00),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          elevation: 0,
-                        ),
+                        style: AppButtonStyle.primaryButton(),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.large),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
                           '계정이 없으신가요?',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.bodyText,
                         ),
                         TextButton(
                           onPressed: () {
@@ -381,11 +326,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           },
                           child: const Text(
                             '지금 가입하기',
-                            style: TextStyle(
-                              color: Color(0xFFB2FF00),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextStyle.linkText,
                           ),
                         ),
                       ],
@@ -410,20 +351,17 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final AuthService _authService = AuthService();
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   
-  bool _obscurePassword = true;
-  bool _obscureConfirmPassword = true;
-  bool _agreedToTerms = false;
+  final bool _obscurePassword = true;
+  final bool _obscureConfirmPassword = true;
   bool _isLoading = false;
   String? _errorMessage;
 
   @override
   void dispose() {
-    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -436,13 +374,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _errorMessage = null;
     });
 
-    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
     // 입력 검증
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       setState(() {
         _errorMessage = '모든 필드를 입력해주세요.';
         _isLoading = false;
@@ -458,49 +395,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (!_agreedToTerms) {
-      setState(() {
-        _errorMessage = '이용약관에 동의해주세요.';
-        _isLoading = false;
-      });
-      return;
-    }
+    // name 값을 이메일의 @ 앞부분으로 설정
+    final userName = email.split('@').first;
 
     // Firebase 회원가입
-    final error = await _authService.registerWithEmailAndPassword(email, password, name);
+    final error = await _authService.registerWithEmailAndPassword(email, password, userName);
     
-    if (error != null) {
-      setState(() {
-        _errorMessage = error;
-        _isLoading = false;
-      });
-      return;
-    }
-
+    // 상태 업데이트
     setState(() {
       _isLoading = false;
+      if (error != null) _errorMessage = error;
     });
 
-    // 회원가입 성공 시 자동으로 프로필 화면으로 이동
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('회원가입 성공!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+    // mounted 체크 후 직접 context 사용
+    if (mounted && error == null) {
+      AppSnackBar.showSuccess(context, '회원가입 성공!');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFB2FF00)),
+          icon: Icon(Icons.arrow_back, color: AppColors.primary),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -508,134 +429,83 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.large),
               child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                ),
-                padding: const EdgeInsets.all(20.0),
+                decoration: AppDecorations.mainBoxDecoration(),
+                padding: const EdgeInsets.all(AppSpacing.large),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
                       '회원가입',
-                      style: TextStyle(
-                        color: Color(0xFFB2FF00),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: AppTextStyle.title,
                     ),
-                    const Divider(
-                      color: Color(0xFFB2FF00),
-                      thickness: 1,
-                    ),
-                    const SizedBox(height: 20),
+                    AppDividers.primary,
+                    const SizedBox(height: AppSpacing.large),
                     // 이메일 필드
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           '아이디(이메일)',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.label,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.small),
                         Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                          ),
+                          decoration: AppDecorations.inputBoxDecoration(),
                           child: TextField(
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: AppTextStyle.bodyText,
+                            decoration: AppDecorations.inputDecoration(
                               hintText: 'ENTER_EMAIL',
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                              suffixIcon: Icon(
-                                Icons.check_circle,
-                                color: Color(0xFFB2FF00),
-                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.large),
                     // 비밀번호 필드
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           '비밀번호',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.label,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.small),
                         Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                          ),
+                          decoration: AppDecorations.inputBoxDecoration(),
                           child: TextField(
                             controller: _passwordController,
                             obscureText: _obscurePassword,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: AppTextStyle.bodyText,
+                            decoration: AppDecorations.inputDecoration(
                               hintText: 'ENTER_PASSWORD',
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                              suffixIcon: Icon(
-                                Icons.check_circle,
-                                color: Color(0xFFB2FF00),
-                              ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.large),
                     // 비밀번호 확인 필드
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           '비밀번호 확인',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.label,
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.small),
                         Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(4),
-                            border: Border.all(color: const Color(0xFFB2FF00), width: 1),
-                          ),
+                          decoration: AppDecorations.inputBoxDecoration(),
                           child: TextField(
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirmPassword,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
+                            style: AppTextStyle.bodyText,
+                            decoration: AppDecorations.inputDecoration(
                               hintText: 'CONFIRM_PASSWORD',
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                              suffixIcon: Icon(
-                                Icons.check_circle,
-                                color: Color(0xFFB2FF00),
-                              ),
                             ),
                           ),
                         ),
@@ -644,10 +514,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // 에러 메시지 표시
                     if (_errorMessage != null)
                       Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
+                        padding: const EdgeInsets.only(top: AppSpacing.small),
                         child: Text(
                           _errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                          style: TextStyle(color: AppColors.error),
                         ),
                       ),
                     const SizedBox(height: 25),
@@ -656,35 +526,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: _isLoading ? null : _register,
-                        icon: const Icon(Icons.add, color: Colors.black),
+                        icon: Icon(Icons.add, color: AppColors.textDark),
                         label: const Text(
                           'REGISTER',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                          style: AppTextStyle.buttonText,
                         ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFB2FF00),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          elevation: 0,
-                        ),
+                        style: AppButtonStyle.primaryButton(),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: AppSpacing.large),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text(
                           '이미 계정이 있으신가요?',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
+                          style: AppTextStyle.bodyText,
                         ),
                         TextButton(
                           onPressed: () {
@@ -692,11 +548,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                           child: const Text(
                             '로그인하기',
-                            style: TextStyle(
-                              color: Color(0xFFB2FF00),
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: AppTextStyle.linkText,
                           ),
                         ),
                       ],
@@ -767,12 +619,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final bio = _bioController.text.trim();
     
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('이름을 입력해주세요.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이름을 입력해주세요.')),
+        );
+      }
       setState(() {
         _isSaving = false;
       });
@@ -785,25 +636,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isSaving = false;
     });
     
+    if (!mounted) return;
+    
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('프로필이 성공적으로 업데이트되었습니다.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      
-      // 프로필 저장 성공 시 홈 화면으로 이동
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home');
-      }
+      AppSnackBar.showSuccess(context, '프로필이 성공적으로 업데이트되었습니다.');
+      Navigator.pushReplacementNamed(context, '/home');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('프로필 업데이트에 실패했습니다.'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      AppSnackBar.showError(context, '프로필 업데이트에 실패했습니다.');
     }
   }
 
@@ -814,20 +653,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.black,
         elevation: 0,
-        title: const Text('프로필 설정', style: TextStyle(color: Colors.black)),
+        title: const Text(
+          '프로필 설정', 
+          style: TextStyle(
+            color: Color(0xFFB2FF00),
+            fontWeight: FontWeight.bold
+          )
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.black),
+            icon: const Icon(Icons.logout, color: Color(0xFFB2FF00)),
             onPressed: _signOut,
           ),
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFB2FF00)))
           : SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
@@ -836,55 +681,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   children: [
                     const SizedBox(height: 20),
                     // 프로필 이미지
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Colors.blue.shade100,
-                      child: const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.blue,
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFB2FF00), width: 2),
+                      ),
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.black,
+                        child: const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: Color(0xFFB2FF00),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 30),
                     // 이름 입력 필드
-                    TextField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: '이름',
-                        hintText: '사용자 이름을 입력하세요',
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '이름',
+                          style: TextStyle(
+                            color: Color(0xFFB2FF00),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFB2FF00)),
+                            color: Colors.black,
+                          ),
+                          child: TextField(
+                            controller: _nameController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: '사용자 이름을 입력하세요',
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                            ),
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 20),
                     // 자기소개 입력 필드
-                    TextField(
-                      controller: _bioController,
-                      maxLines: 5,
-                      decoration: InputDecoration(
-                        labelText: '자기소개',
-                        hintText: '자기소개를 입력하세요',
-                        filled: true,
-                        fillColor: Colors.grey.shade50,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          '자기소개',
+                          style: TextStyle(
+                            color: Color(0xFFB2FF00),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        const SizedBox(height: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: const Color(0xFFB2FF00)),
+                            color: Colors.black,
+                          ),
+                          child: TextField(
+                            controller: _bioController,
+                            maxLines: 5,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: const InputDecoration(
+                              hintText: '자기소개를 입력하세요',
+                              hintStyle: TextStyle(color: Colors.grey),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                            ),
+                          ),
                         ),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      ),
+                      ],
                     ),
                     const SizedBox(height: 30),
                     // 저장 버튼
@@ -893,11 +766,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _updateProfile,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
+                          backgroundColor: const Color(0xFFB2FF00),
+                          foregroundColor: Colors.black,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                         ),
                         child: _isSaving
@@ -905,38 +778,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   strokeWidth: 2,
                                 ),
                               )
                             : const Text(
                                 '저장하기',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16, 
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black,
+                                ),
                               ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     // 계정 정보
-                    Card(
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFB2FF00)),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(15.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              '계정 정보',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            '계정 정보',
+                            style: TextStyle(
+                              fontSize: 16, 
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFB2FF00),
                             ),
-                            const SizedBox(height: 10),
-                            Text('이메일: ${_profileData?['email'] ?? ''}'),
-                            const SizedBox(height: 5),
-                            Text('가입일: ${_profileData?['createdAt'] != null ? _formatDate(_profileData!['createdAt']) : ''}'),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.email, color: Color(0xFFB2FF00), size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${_profileData?['email'] ?? ''}',
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 5),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.calendar_today, color: Color(0xFFB2FF00), size: 16),
+                              const SizedBox(width: 8),
+                              Text(
+                                '가입일: ${_profileData?['createdAt'] != null ? _formatDate(_profileData!['createdAt']) : ''}',
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -978,20 +878,38 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: '홈',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(color: const Color(0xFFB2FF00), width: 1),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: '프로필',
+        ),
+        child: Theme(
+          data: Theme.of(context).copyWith(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
           ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
+          child: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: '홈',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: '프로필',
+              ),
+            ],
+            currentIndex: _selectedIndex,
+            backgroundColor: Colors.black,
+            unselectedItemColor: Colors.white54,
+            selectedItemColor: const Color(0xFFB2FF00),
+            type: BottomNavigationBarType.fixed,
+            showUnselectedLabels: true,
+            enableFeedback: false,
+            onTap: _onItemTapped,
+          ),
+        ),
       ),
     );
   }
@@ -1526,15 +1444,16 @@ class _HomeScreenState extends State<HomeScreen> {
           _selectedEvents = _getEventsForDay(_selectedDay!);
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('운동 기록이 추가되었습니다')),
-        );
+        if (mounted) {
+          AppSnackBar.showSuccess(context, '운동 기록이 추가되었습니다');
+        }
       }
     } catch (e) {
       _logger.e('운동 기록 추가 오류: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('운동 기록 추가에 실패했습니다')),
-      );
+      
+      if (mounted) {
+        AppSnackBar.showError(context, '운동 기록 추가에 실패했습니다');
+      }
     }
   }
 
@@ -1576,15 +1495,16 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('운동 기록이 업데이트되었습니다')),
-        );
+        if (mounted) {
+          AppSnackBar.showSuccess(context, '운동 기록이 업데이트되었습니다');
+        }
       }
     } catch (e) {
       _logger.e('운동 기록 업데이트 오류: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('운동 기록 업데이트에 실패했습니다')),
-      );
+      
+      if (mounted) {
+        AppSnackBar.showError(context, '운동 기록 업데이트에 실패했습니다');
+      }
     }
   }
 
@@ -1608,15 +1528,16 @@ class _HomeScreenState extends State<HomeScreen> {
           _selectedEvents = _getEventsForDay(_selectedDay!);
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('운동 기록이 삭제되었습니다')),
-        );
+        if (mounted) {
+          AppSnackBar.showSuccess(context, '운동 기록이 삭제되었습니다');
+        }
       }
     } catch (e) {
       _logger.e('운동 기록 삭제 오류: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('운동 기록 삭제에 실패했습니다')),
-      );
+      
+      if (mounted) {
+        AppSnackBar.showError(context, '운동 기록 삭제에 실패했습니다');
+      }
     }
   }
 }
