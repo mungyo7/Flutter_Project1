@@ -3,6 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:logger/logger.dart';
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -1043,25 +1045,645 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-// HomeScreen 클래스 추가 - 빈 홈 화면
-class HomeScreen extends StatelessWidget {
+// HomeScreen 클래스 수정 - 운동 관리 홈 화면
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final Logger _logger = Logger();
+  
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+  Map<DateTime, List<WorkoutLog>> _events = {};
+  List<WorkoutLog> _selectedEvents = [];
+  bool _isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _selectedDay = _focusedDay;
+    _loadWorkoutLogs();
+  }
+  
+  Future<void> _loadWorkoutLogs() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final querySnapshot = await _firestore
+            .collection('workout_logs')
+            .where('userId', isEqualTo: user.uid)
+            .get();
+        
+        final events = <DateTime, List<WorkoutLog>>{};
+        
+        for (var doc in querySnapshot.docs) {
+          final data = doc.data();
+          final timestamp = (data['date'] as Timestamp).toDate();
+          final date = DateTime(timestamp.year, timestamp.month, timestamp.day);
+          
+          final log = WorkoutLog(
+            id: doc.id,
+            name: data['name'],
+            date: timestamp,
+            duration: data['duration'],
+            calories: data['calories'],
+            notes: data['notes'] ?? '',
+          );
+          
+          if (events[date] != null) {
+            events[date]!.add(log);
+          } else {
+            events[date] = [log];
+          }
+        }
+        
+        setState(() {
+          _events = events;
+          _selectedEvents = _getEventsForDay(_selectedDay!);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      _logger.e('운동 기록 로드 오류: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+  
+  List<WorkoutLog> _getEventsForDay(DateTime day) {
+    final normalizedDay = DateTime(day.year, day.month, day.day);
+    return _events[normalizedDay] ?? [];
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('홈', style: TextStyle(color: Colors.black)),
-        backgroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: const Center(
-        child: Text(
-          '홈 화면',
-          style: TextStyle(fontSize: 24),
+        title: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              color: const Color(0xFFB2FF00),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'Health Manager',
+              style: TextStyle(
+                color: Color(0xFFB2FF00),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.menu, color: Color(0xFFB2FF00)),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${_focusedDay.year} / ${DateFormat('MMM').format(_focusedDay).toUpperCase()}',
+                  style: const TextStyle(
+                    color: Color(0xFFB2FF00),
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _focusedDay = DateTime(
+                            _focusedDay.year,
+                            _focusedDay.month - 1,
+                            1,
+                          );
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: const Color(0xFFB2FF00),
+                        elevation: 0,
+                        side: const BorderSide(color: Color(0xFFB2FF00)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        minimumSize: const Size(60, 30),
+                      ),
+                      child: const Text('PREV'),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _focusedDay = DateTime(
+                            _focusedDay.year,
+                            _focusedDay.month + 1,
+                            1,
+                          );
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: const Color(0xFFB2FF00),
+                        elevation: 0,
+                        side: const BorderSide(color: Color(0xFFB2FF00)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        minimumSize: const Size(60, 30),
+                      ),
+                      child: const Text('NEXT'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          TableCalendar(
+            firstDay: DateTime.utc(2022, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: _focusedDay,
+            calendarFormat: CalendarFormat.month,
+            availableCalendarFormats: const {CalendarFormat.month: 'Month'},
+            eventLoader: _getEventsForDay,
+            selectedDayPredicate: (day) {
+              return isSameDay(_selectedDay, day);
+            },
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+                _selectedEvents = _getEventsForDay(selectedDay);
+              });
+            },
+            onPageChanged: (focusedDay) {
+              _focusedDay = focusedDay;
+            },
+            headerVisible: false,
+            daysOfWeekHeight: 40,
+            rowHeight: 60,
+            calendarStyle: const CalendarStyle(
+              defaultTextStyle: TextStyle(color: Colors.white),
+              weekendTextStyle: TextStyle(color: Colors.white),
+              holidayTextStyle: TextStyle(color: Colors.white),
+              outsideTextStyle: TextStyle(color: Colors.grey),
+              defaultDecoration: BoxDecoration(
+                border: Border.fromBorderSide(
+                  BorderSide(color: Color(0xFFB2FF00), width: 0.5),
+                ),
+                color: Colors.black,
+              ),
+              weekendDecoration: BoxDecoration(
+                border: Border.fromBorderSide(
+                  BorderSide(color: Color(0xFFB2FF00), width: 0.5),
+                ),
+                color: Colors.black,
+              ),
+              outsideDecoration: BoxDecoration(
+                border: Border.fromBorderSide(
+                  BorderSide(color: Color(0xFFB2FF00), width: 0.5),
+                ),
+                color: Colors.black,
+              ),
+              selectedDecoration: BoxDecoration(
+                border: Border.fromBorderSide(
+                  BorderSide(color: Color(0xFFB2FF00), width: 2),
+                ),
+                color: Colors.black,
+              ),
+              todayDecoration: BoxDecoration(
+                border: Border.fromBorderSide(
+                  BorderSide(color: Color(0xFFB2FF00), width: 1),
+                ),
+                color: Color(0x22B2FF00),
+              ),
+              markerDecoration: BoxDecoration(
+                color: Color(0xFFB2FF00),
+                shape: BoxShape.circle,
+              ),
+              markerSize: 5,
+              markersMaxCount: 3,
+            ),
+            daysOfWeekStyle: const DaysOfWeekStyle(
+              weekdayStyle: TextStyle(color: Color(0xFFB2FF00)),
+              weekendStyle: TextStyle(color: Color(0xFFB2FF00)),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFB2FF00), width: 0.5),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(12.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFB2FF00)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'RECENT_WORKOUT_LOGS',
+                        style: TextStyle(
+                          color: Color(0xFFB2FF00),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        color: const Color(0xFFB2FF00),
+                        child: _isLoading
+                            ? const Text(
+                                'LOADING...',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              )
+                            : const Text(
+                                'ADD NEW',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(
+                            child: Text(
+                              'LOADING_DATA...',
+                              style: TextStyle(
+                                color: Color(0xFFB2FF00),
+                              ),
+                            ),
+                          )
+                        : _selectedEvents.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'NO_WORKOUT_LOGS',
+                                  style: TextStyle(
+                                    color: Color(0xFFB2FF00),
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: _selectedEvents.length,
+                                itemBuilder: (context, index) {
+                                  final event = _selectedEvents[index];
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 8.0),
+                                    padding: const EdgeInsets.all(8.0),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(color: const Color(0xFFB2FF00)),
+                                    ),
+                                    child: ListTile(
+                                      title: Text(
+                                        event.name,
+                                        style: const TextStyle(
+                                          color: Color(0xFFB2FF00),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      subtitle: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '시간: ${event.duration} 분',
+                                            style: const TextStyle(color: Colors.white),
+                                          ),
+                                          Text(
+                                            '칼로리: ${event.calories} kcal',
+                                            style: const TextStyle(color: Colors.white),
+                                          ),
+                                          if (event.notes.isNotEmpty)
+                                            Text(
+                                              '메모: ${event.notes}',
+                                              style: const TextStyle(color: Colors.white),
+                                            ),
+                                        ],
+                                      ),
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit, color: Color(0xFFB2FF00)),
+                                            onPressed: () => _showWorkoutLogDialog(event),
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete, color: Color(0xFFB2FF00)),
+                                            onPressed: () => _deleteWorkoutLog(event),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFB2FF00),
+        onPressed: () => _showWorkoutLogDialog(null),
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }
+
+  Future<void> _showWorkoutLogDialog(WorkoutLog? log) async {
+    final nameController = TextEditingController(text: log?.name ?? '');
+    final durationController = TextEditingController(text: log?.duration.toString() ?? '');
+    final caloriesController = TextEditingController(text: log?.calories.toString() ?? '');
+    final notesController = TextEditingController(text: log?.notes ?? '');
+    
+    return showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.black,
+        title: Text(
+          log == null ? '운동 기록 추가' : '운동 기록 수정',
+          style: const TextStyle(color: Color(0xFFB2FF00)),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: '운동 이름',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFB2FF00)),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: durationController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: '운동 시간 (분)',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFB2FF00)),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: caloriesController,
+                style: const TextStyle(color: Colors.white),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: '소모 칼로리 (kcal)',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFB2FF00)),
+                  ),
+                ),
+              ),
+              TextField(
+                controller: notesController,
+                style: const TextStyle(color: Colors.white),
+                decoration: const InputDecoration(
+                  labelText: '메모',
+                  labelStyle: TextStyle(color: Colors.white),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFB2FF00)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('취소', style: TextStyle(color: Colors.white)),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+          TextButton(
+            child: const Text('저장', style: TextStyle(color: Color(0xFFB2FF00))),
+            onPressed: () {
+              final name = nameController.text.trim();
+              final durationText = durationController.text.trim();
+              final caloriesText = caloriesController.text.trim();
+              final notes = notesController.text.trim();
+
+              if (name.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('운동 이름을 입력하세요')),
+                );
+                return;
+              }
+
+              final duration = int.tryParse(durationText) ?? 0;
+              final calories = int.tryParse(caloriesText) ?? 0;
+
+              if (log == null) {
+                _addWorkoutLog(name, duration, calories, notes);
+              } else {
+                _updateWorkoutLog(log.id, name, duration, calories, notes);
+              }
+
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addWorkoutLog(
+    String name,
+    int duration,
+    int calories,
+    String notes,
+  ) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        final docRef = await _firestore
+            .collection('workout_logs')
+            .add({
+          'userId': user.uid,
+          'name': name,
+          'date': Timestamp.fromDate(_selectedDay!),
+          'duration': duration,
+          'calories': calories,
+          'notes': notes,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        final log = WorkoutLog(
+          id: docRef.id,
+          name: name,
+          date: _selectedDay!,
+          duration: duration,
+          calories: calories,
+          notes: notes,
+        );
+
+        setState(() {
+          final day = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
+          if (_events[day] != null) {
+            _events[day]!.add(log);
+          } else {
+            _events[day] = [log];
+          }
+          _selectedEvents = _getEventsForDay(_selectedDay!);
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('운동 기록이 추가되었습니다')),
+        );
+      }
+    } catch (e) {
+      _logger.e('운동 기록 추가 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('운동 기록 추가에 실패했습니다')),
+      );
+    }
+  }
+
+  Future<void> _updateWorkoutLog(
+    String id,
+    String name,
+    int duration,
+    int calories,
+    String notes,
+  ) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('workout_logs')
+            .doc(id)
+            .update({
+          'name': name,
+          'duration': duration,
+          'calories': calories,
+          'notes': notes,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        setState(() {
+          final day = DateTime(_selectedDay!.year, _selectedDay!.month, _selectedDay!.day);
+          final index = _events[day]?.indexWhere((log) => log.id == id) ?? -1;
+          
+          if (index != -1) {
+            _events[day]![index] = WorkoutLog(
+              id: id,
+              name: name,
+              date: _selectedDay!,
+              duration: duration,
+              calories: calories,
+              notes: notes,
+            );
+            _selectedEvents = _getEventsForDay(_selectedDay!);
+          }
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('운동 기록이 업데이트되었습니다')),
+        );
+      }
+    } catch (e) {
+      _logger.e('운동 기록 업데이트 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('운동 기록 업데이트에 실패했습니다')),
+      );
+    }
+  }
+
+  Future<void> _deleteWorkoutLog(WorkoutLog log) async {
+    try {
+      final user = _auth.currentUser;
+      if (user != null) {
+        await _firestore
+            .collection('workout_logs')
+            .doc(log.id)
+            .delete();
+
+        setState(() {
+          final day = DateTime(log.date.year, log.date.month, log.date.day);
+          _events[day]?.removeWhere((item) => item.id == log.id);
+          
+          if (_events[day]?.isEmpty ?? false) {
+            _events.remove(day);
+          }
+          
+          _selectedEvents = _getEventsForDay(_selectedDay!);
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('운동 기록이 삭제되었습니다')),
+        );
+      }
+    } catch (e) {
+      _logger.e('운동 기록 삭제 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('운동 기록 삭제에 실패했습니다')),
+      );
+    }
+  }
+}
+
+class WorkoutLog {
+  final String id;
+  final String name;
+  final DateTime date;
+  final int duration;
+  final int calories;
+  final String notes;
+
+  WorkoutLog({
+    required this.id,
+    required this.name,
+    required this.date,
+    required this.duration,
+    required this.calories,
+    required this.notes,
+  });
 }
 
