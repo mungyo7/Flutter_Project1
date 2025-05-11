@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:logger/logger.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -68,6 +69,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final Logger _logger = Logger();
 
   // 인증 상태 변경 스트림
   Stream<User?> get authStateChanges => _auth.authStateChanges();
@@ -139,7 +141,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('프로필 가져오기 오류: $e');
+      _logger.e('프로필 가져오기 오류: $e');
       return null;
     }
   }
@@ -157,7 +159,7 @@ class AuthService {
       }
       return false;
     } catch (e) {
-      print('프로필 업데이트 오류: $e');
+      _logger.e('프로필 업데이트 오류: $e');
       return false;
     }
   }
